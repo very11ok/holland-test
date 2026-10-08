@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#667eea">
+<title>霍兰德职业兴趣测试</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #f5f7fa; color: #333; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: block; animation: fadeUp .3s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ====== 引导页 ====== */
+#intro {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 40px 24px; text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;
+}
+.intro-icon { font-size: 56px; margin-bottom: 16px; }
+.intro-title { font-size: 26px; font-weight: 700; margin-bottom: 10px; letter-spacing: 1px; }
+.intro-sub { font-size: 15px; opacity: .85; margin-bottom: 28px; }
+.intro-tags { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; justify-content: center; }
+.intro-tag { background: rgba(255,255,255,.18); padding: 6px 14px; border-radius: 20px; font-size: 13px; }
+.intro-btn {
+  background: #fff; color: #764ba2; border: none; padding: 14px 52px;
+  font-size: 17px; font-weight: 600; border-radius: 50px; cursor: pointer; transition: transform .15s;
+}
+.intro-btn:active { transform: scale(.95); }
+.intro-privacy { margin-top: 24px; font-size: 12px; opacity: .6; }
+
+/* ====== 答题页 ====== */
+.pbar { position: sticky; top: 0; z-index: 100; background: #fff; padding: 10px 16px; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+.pbar-txt { font-size: 13px; color: #888; margin-bottom: 5px; display: flex; justify-content: space-between; }
+.pbar-txt span:last-child { font-weight: 600; color: #555; }
+.pbar-track { height: 5px; background: #e8e8e8; border-radius: 3px; overflow: hidden; }
+.pbar-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 3px; transition: width .3s; width: 0%; }
+.qlist { padding: 14px 14px 20px; max-width: 600px; margin: 0 auto; }
+.qcard {
+  background: #fff; border-radius: 12px; padding: 18px 16px; margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05); border: 2px solid transparent; transition: border-color .2s;
+}
+.qcard.unanswered { border-color: #ff9800; animation: shake .3s; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.qnum { font-size: 12px; color: #bbb; margin-bottom: 6px; }
+.qtext { font-size: 16px; font-weight: 500; margin-bottom: 14px; line-height: 1.5; }
+.qopts { display: flex; gap: 10px; }
+.qbtn {
+  flex: 1; padding: 11px; border: 2px solid #e8e8e8; background: #fff; border-radius: 8px;
+  font-size: 15px; cursor: pointer; transition: all .15s; color: #888;
+}
+.qbtn.sel-yes { background: #4caf50; border-color: #4caf50; color: #fff; font-weight: 600; }
+.qbtn.sel-no { background: #9e9e9e; border-color: #9e9e9e; color: #fff; font-weight: 600; }
+.submit-sec { padding: 16px 14px 40px; max-width: 600px; margin: 0 auto; }
+.submit-btn {
+  width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer;
+}
+.submit-btn:active { opacity: .85; }
+
+/* ====== 结果页 ====== */
+#results { padding: 20px 16px 60px; max-width: 600px; margin: 0 auto; }
+.res-head {
+  text-align: center; margin-bottom: 28px; padding: 28px 0 24px;
+  background: linear-gradient(135deg, rgba(102,126,234,.05), rgba(118,75,162,.05)); border-radius: 16px;
+}
+.res-label { font-size: 14px; color: #999; margin-bottom: 14px; }
+.code-row { display: flex; justify-content: center; gap: 12px; margin-bottom: 14px; }
+.code-badge {
+  width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center;
+  justify-content: center; font-size: 26px; font-weight: 800; color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+}
+.code-names { font-size: 14px; color: #666; }
+.code-names b { color: #333; }
+.sec-title { font-size: 17px; font-weight: 600; margin-bottom: 14px; padding-left: 10px; border-left: 4px solid #764ba2; }
+.scores-sec, .types-sec { margin-bottom: 28px; }
+.score-row { background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.score-top { display: flex; align-items: center; margin-bottom: 7px; }
+.s-badge {
+  width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center;
+  justify-content: center; font-size: 15px; font-weight: 700; color: #fff; margin-right: 10px; flex-shrink: 0;
+}
+.s-name { font-size: 15px; flex: 1; font-weight: 500; }
+.s-val { font-size: 14px; color: #555; font-weight: 600; }
+.s-rank { font-size: 10px; padding: 2px 7px; border-radius: 10px; margin-left: 6px; color: #fff; font-weight: 600; }
+.s-bar-trk { height: 7px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+.s-bar-fl { height: 100%; border-radius: 4px; width: 0; transition: width 1s ease; }
+.type-card {
+  background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04); border-left: 4px solid #eee; transition: border-color .2s;
+}
+.type-card.hi { border-left-color: #764ba2; background: #fbf9ff; }
+.tc-head { display: flex; align-items: center; margin-bottom: 6px; }
+.tc-badge {
+  width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center;
+  justify-content: center; font-size: 14px; font-weight: 700; color: #fff; margin-right: 10px; flex-shrink: 0;
+}
+.tc-name { font-size: 16px; font-weight: 600; }
+.tc-star { margin-left: 8px; font-size: 14px; }
+.tc-desc { font-size: 14px; color: #666; line-height: 1.6; }
+.restart-btn {
+  width: 100%; padding: 13px; background: #fff; color: #764ba2; border: 2px solid #764ba2;
+  border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px;
+}
+.restart-btn:active { background: #764ba2; color: #fff; }
+
+/* ====== 弹窗 ====== */
+.modal-ov {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,.45); z-index: 9999; align-items: center; justify-content: center;
+}
+.modal-ov.show { display: flex; }
+.modal-box { background: #fff; border-radius: 16px; padding: 28px 24px; max-width: 320px; width: 85%; text-align: center; }
+.modal-icon { font-size: 36px; margin-bottom: 10px; }
+.modal-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+.modal-text { font-size: 14px; color: #888; margin-bottom: 20px; line-height: 1.6; }
+.modal-btn { background: #764ba2; color: #fff; border: none; padding: 10px 36px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- ====== 引导页 ====== -->
+<div id="intro" class="screen active">
+  <div class="intro-icon">🎯</div>
+  <div class="intro-title">霍兰德职业兴趣测试</div>
+  <div class="intro-sub">探索你的职业兴趣方向</div>
+  <div class="intro-tags">
+    <span class="intro-tag">40 道题</span>
+    <span class="intro-tag">约 5 分钟</span>
+    <span class="intro-tag">6 大维度</span>
+  </div>
+  <button class="intro-btn" onclick="startQuiz()">开始测试</button>
+  <div class="intro-privacy">🔒 所有数据仅在浏览器本地处理，不上传任何服务器</div>
+</div>
+
+<!-- ====== 答题页 ====== -->
+<div id="quiz" class="screen">
+  <div class="pbar">
+    <div class="pbar-txt">
+      <span>已完成</span>
+      <span><span id="ansCount">0</span>/40</span>
+    </div>
+    <div class="pbar-track"><div class="pbar-fill" id="pFill"></div></div>
+  </div>
+  <div class="qlist" id="qList"></div>
+  <div class="submit-sec"><button class="submit-btn" onclick="submitQuiz()">提交并查看结果</button></div>
+</div>
+
+<!-- ====== 结果页 ====== -->
+<div id="results" class="screen"></div>
+
+<!-- ====== 校验弹窗 ====== -->
+<div class="modal-ov" id="modal">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">有题目未作答</div>
+    <div class="modal-text" id="modalText"></div>
+    <button class="modal-btn" onclick="closeModal()">知道了</button>
+  </div>
+</div>
+
+<script>
+/* ====== 题库 40 题（R7 I7 A6 S6 E7 C7） ====== */
+var questions = [
+  { text: "修理各类小家电、简单器械", type: "R" },
+  { text: "动手做手工模型", type: "R" },
+  { text: "喜欢拆装物品，观察内部构造", type: "R" },
+  { text: "参加户外实践活动", type: "R" },
+  { text: "愿意学习机械车辆相关知识", type: "R" },
+  { text: "动手制作一件实物作品", type: "R" },
+  { text: "修理自行车等物件", type: "R" },
+  { text: "阅读科普类读物", type: "I" },
+  { text: "喜欢琢磨事物背后的原理", type: "I" },
+  { text: "有兴趣做小实验观察现象", type: "I" },
+  { text: "喜欢数理类内容", type: "I" },
+  { text: "习惯独立思考，钻研问题", type: "I" },
+  { text: "乐于分析数据寻找规律", type: "I" },
+  { text: "愿意去探索陌生事物", type: "I" },
+  { text: "画画或者随手涂鸦创作", type: "A" },
+  { text: "欣赏或者演奏音乐", type: "A" },
+  { text: "写随笔、感想、小诗", type: "A" },
+  { text: "喜欢摄影，记录美好的画面", type: "A" },
+  { text: "脑洞大，喜欢新奇想法", type: "A" },
+  { text: "尝试设计图案、小创意作品", type: "A" },
+  { text: "开导情绪低落的朋友", type: "S" },
+  { text: "乐于帮助别人解决麻烦", type: "S" },
+  { text: "愿意倾听别人的心事", type: "S" },
+  { text: "愿意照顾需要帮助的人", type: "S" },
+  { text: "愿意参加志愿公益活动", type: "S" },
+  { text: "乐于给别人讲解知识", type: "S" },
+  { text: "组织同学策划集体活动", type: "E" },
+  { text: "尝试说服别人接纳想法", type: "E" },
+  { text: "愿意充当团队负责人", type: "E" },
+  { text: "对外沟通交涉各类事情", type: "E" },
+  { text: "敢于当众表达自己想法", type: "E" },
+  { text: "愿意去宣传推广观点", type: "E" },
+  { text: "安排团队成员分工", type: "E" },
+  { text: "整理文件做好归档", type: "C" },
+  { text: "核对表格数据，仔细检查", type: "C" },
+  { text: "养成记备忘录的习惯", type: "C" },
+  { text: "按照既定流程完成任务", type: "C" },
+  { text: "整理物品，保持整齐有序", type: "C" },
+  { text: "填写表单，录入各类信息", type: "C" },
+  { text: "核对资料，查找错误", type: "C" }
+];
+
+/* ====== 六维释义 ====== */
+var typeData = {
+  R: { name: "现实型", color: "#4CAF50", desc: "偏好实物、动手操作，擅长工具、机械、户外类事务" },
+  I: { name: "研究型", color: "#2196F3", desc: "偏好思考探究，爱分析推理，适合科研、数据分析" },
+  A: { name: "艺术型", color: "#9C27B0", desc: "偏好想象创意，喜欢美术音乐文学，追求自由表达" },
+  S: { name: "社会型", color: "#FF9800", desc: "偏好与人打交道，乐于帮助别人，适合服务、教育" },
+  E: { name: "企业型", color: "#F44336", desc: "偏好影响他人，擅长组织动员，适合管理、策划、营销" },
+  C: { name: "常规型", color: "#009688", desc: "偏好秩序规则，擅长文书表格归档，适合财务行政" }
+};
+
+var types = ["R", "I", "A", "S", "E", "C"];
+var answers = new Array(questions.length).fill(null);
+
+/* ====== 开始测试 ====== */
+function startQuiz() {
+  document.getElementById("intro").classList.remove("active");
+  document.getElementById("quiz").classList.add("active");
+  renderQuestions();
+  window.scrollTo(0, 0);
+}
+
+/* ====== 渲染题目 ====== */
+function renderQuestions() {
+  var html = "";
+  for (var i = 0; i < questions.length; i++) {
+    html += '<div class="qcard" id="qc' + i + '">' +
+      '<div class="qnum">第 ' + (i + 1) + ' 题</div>' +
+      '<div class="qtext">' + questions[i].text + '</div>' +
+      '<div class="qopts">' +
+        '<button class="qbtn" id="yes' + i + '" onclick="selectAnswer(' + i + ',1)">是</button>' +
+        '<button class="qbtn" id="no' + i + '" onclick="selectAnswer(' + i + ',0)">否</button>' +
+      '</div></div>';
+  }
+  document.getElementById("qList").innerHTML = html;
+}
+
+/* ====== 选择答案 ====== */
+function selectAnswer(idx, val) {
+  answers[idx] = val;
+  var y = document.getElementById("yes" + idx);
+  var n = document.getElementById("no" + idx);
+  y.className = "qbtn";
+  n.className = "qbtn";
+  if (val === 1) { y.className = "qbtn sel-yes"; }
+  else { n.className = "qbtn sel-no"; }
+  var card = document.getElementById("qc" + idx);
+  if (card) { card.classList.remove("unanswered"); }
+  updateProgress();
+}
+
+/* ====== 更新进度条 ====== */
+function updateProgress() {
+  var c = 0;
+  for (var i = 0; i < answers.length; i++) { if (answers[i] !== null) c++; }
+  document.getElementById("ansCount").textContent = c;
+  document.getElementById("pFill").style.width = (c / questions.length * 100) + "%";
+}
+
+/* ====== 提交校验 + 计分 ====== */
+function submitQuiz() {
+  /* 校验未作答 */
+  var unanswered = [];
+  for (var i = 0; i < answers.length; i++) {
+    if (answers[i] === null) unanswered.push(i + 1);
+  }
+  if (unanswered.length > 0) {
+    var msg;
+    if (unanswered.length <= 5) {
+      msg = "第 " + unanswered.join("、") + " 题尚未作答，请完成后再提交。";
+    } else {
+      msg = "还有 " + unanswered.length + " 题尚未作答，请完成后再提交。";
+    }
+    document.getElementById("modalText").textContent = msg;
+    document.getElementById("modal").classList.add("show");
+    var firstIdx = unanswered[0] - 1;
+    var card = document.getElementById("qc" + firstIdx);
+    if (card) {
+      card.classList.add("unanswered");
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    return;
+  }
+
+  /* 计算原始分和满分 */
+  var raw = {}, max = {};
+  for (var i = 0; i < types.length; i++) { raw[types[i]] = 0; max[types[i]] = 0; }
+  for (var i = 0; i < questions.length; i++) {
+    var t = questions[i].type;
+    max[t]++;
+    if (answers[i] === 1) raw[t]++;
+  }
+
+  /* 归一化为百分比（公平排名） */
+  var pct = {};
+  for (var i = 0; i < types.length; i++) {
+    pct[types[i]] = max[types[i]] > 0 ? (raw[types[i]] / max[types[i]] * 100) : 0;
+  }
+
+  /* 按百分比降序排名，同分按 R>I>A>S>E>C 顺序 */
+  var ranked = types.slice().sort(function(a, b) {
+    if (pct[b] !== pct[a]) return pct[b] - pct[a];
+    return types.indexOf(a) - types.indexOf(b);
+  });
+  var code = ranked.slice(0, 3).join("");
+
+  showResults(raw, max, pct, ranked, code);
+}
+
+/* ====== 展示结果 ====== */
+function showResults(raw, max, pct, ranked, code) {
+  document.getElementById("quiz").classList.remove("active");
+  var div = document.getElementById("results");
+
+  /* 三字代码徽章 */
+  var codeHtml = "";
+  for (var i = 0; i < 3; i++) {
+    var t = ranked[i];
+    var d = typeData[t];
+    codeHtml += '<div class="code-badge" style="background:' + d.color + '">' + t + '</div>';
+  }
+  var codeNamesHtml = "";
+  for (var i = 0; i < 3; i++) {
+    var t = ranked[i];
+    var d = typeData[t];
+    if (i > 0) codeNamesHtml += " + ";
+    codeNamesHtml += "<b>" + d.name + "</b>";
+  }
+
+  /* 六维得分条 */
+  var scoreHtml = "";
+  for (var i = 0; i < ranked.length; i++) {
+    var t = ranked[i];
+    var d = typeData[t];
+    var isTop3 = i < 3;
+    scoreHtml += '<div class="score-row">' +
+      '<div class="score-top">' +
+        '<div class="s-badge" style="background:' + d.color + '">' + t + '</div>' +
+        '<div class="s-name">' + d.name + '</div>' +
+        '<div class="s-val">' + raw[t] + '/' + max[t] + '分' +
+          (isTop3 ? '<span class="s-rank" style="background:' + d.color + '">Top3</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="s-bar-trk"><div class="s-bar-fl" data-w="' + pct[t] + '" style="background:' + d.color + '"></div></div>' +
+    '</div>';
+  }
+
+  /* 六型释义 */
+  var typeHtml = "";
+  for (var i = 0; i < types.length; i++) {
+    var t = types[i];
+    var d = typeData[t];
+    var isTop3 = ranked.indexOf(t) < 3;
+    typeHtml += '<div class="type-card' + (isTop3 ? ' hi' : '') + '">' +
+      '<div class="tc-head">' +
+        '<div class="tc-badge" style="background:' + d.color + '">' + t + '</div>' +
+        '<div class="tc-name">' + d.name + '</div>' +
+        (isTop3 ? '<span class="tc-star">⭐</span>' : '') +
+      '</div>' +
+      '<div class="tc-desc">' + d.desc + '</div>' +
+    '</div>';
+  }
+
+  div.innerHTML =
+    '<div class="res-head">' +
+      '<div class="res-label">你的霍兰德职业兴趣代码</div>' +
+      '<div class="code-row">' + codeHtml + '</div>' +
+      '<div class="code-names">' + codeNamesHtml + '</div>' +
+    '</div>' +
+    '<div class="scores-sec">' +
+      '<div class="sec-title">六维得分</div>' +
+      scoreHtml +
+    '</div>' +
+    '<div class="types-sec">' +
+      '<div class="sec-title">类型释义</div>' +
+      typeHtml +
+    '</div>' +
+    '<button class="restart-btn" onclick="restart()">重新测试</button>';
+
+  div.classList.add("active");
+  window.scrollTo(0, 0);
+
+  /* 延迟触发得分条动画 */
+  setTimeout(function() {
+    var bars = div.querySelectorAll(".s-bar-fl");
+    for (var i = 0; i < bars.length; i++) {
+      bars[i].style.width = bars[i].getAttribute("data-w") + "%";
+    }
+  }, 200);
+}
+
+/* ====== 重新测试 ====== */
+function restart() {
+  for (var i = 0; i < answers.length; i++) answers[i] = null;
+  document.getElementById("results").classList.remove("active");
+  document.getElementById("intro").classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+/* ====== 关闭弹窗 ====== */
+function closeModal() {
+  document.getElementById("modal").classList.remove("show");
+}
+
+/* 点击遮罩关闭弹窗 */
+document.getElementById("modal").addEventListener("click", function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
